@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/gofiber/fiber/v3"
 	"github.com/rubikge/telegram_2_dropbox/config"
 	"github.com/rubikge/telegram_2_dropbox/internal/api"
@@ -11,8 +13,11 @@ import (
 func main() {
 	config := config.LoadConfig()
 
-	telegramService := services.NewTelegramService(config.TelegramBotToken)
-	dropboxService := services.NewDropBoxService(config.DropboxAccessToken, config.DropboxPath)
+	telegramService := services.NewTelegramService(&config.Telegram)
+	dropboxService, err := services.NewDropBoxService(&config.Dropbox)
+	if err != nil {
+		log.Fatalln(err)
+	}
 
 	webhook := controllers.NewWebhook(telegramService, dropboxService)
 

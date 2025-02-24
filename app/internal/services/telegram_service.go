@@ -10,11 +10,11 @@ import (
 )
 
 type TelegramService struct {
-	token string
+	config *models.TelegramConfig
 }
 
-func NewTelegramService(token string) *TelegramService {
-	return &TelegramService{token: token}
+func NewTelegramService(config *models.TelegramConfig) *TelegramService {
+	return &TelegramService{config: config}
 }
 
 func (ts *TelegramService) GetPhoto(message *models.TelegramIncomingMessage) (*models.TelegramPhoto, error) {
@@ -23,7 +23,7 @@ func (ts *TelegramService) GetPhoto(message *models.TelegramIncomingMessage) (*m
 	}
 
 	fileID := message.Message.Photo[len(message.Message.Photo)-1].FileID
-	fileData, err := downloadPhoto(fileID, ts.token)
+	fileData, err := downloadPhoto(fileID, ts.config.BotToken)
 	if err != nil {
 		return nil, err
 	}

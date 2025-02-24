@@ -5,22 +5,23 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
+	"github.com/rubikge/telegram_2_dropbox/internal/models"
 )
 
-type Config struct {
-	TelegramBotToken   string
-	DropboxAccessToken string
-	DropboxPath        string
-}
-
-func LoadConfig() *Config {
+func LoadConfig() *models.Config {
 	if err := godotenv.Load(); err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	return &Config{
-		TelegramBotToken:   os.Getenv("TELEGRAM_BOT_TOKEN"),
-		DropboxAccessToken: os.Getenv("DROPBOX_ACCESS_TOKEN"),
-		DropboxPath:        os.Getenv("DROPBOX_PATH"),
+	return &models.Config{
+		Telegram: models.TelegramConfig{
+			BotToken: os.Getenv("TELEGRAM_BOT_TOKEN"),
+		},
+		Dropbox: models.DropboxConfig{
+			Path:         os.Getenv("DROPBOX_PATH"),
+			AppKey:       os.Getenv("DROPBOX_APP_KEY"),
+			AppSecret:    os.Getenv("DROPBOX_APP_SECRET"),
+			RefreshToken: os.Getenv("DROPBOX_REFRESH_TOKEN"),
+		},
 	}
 }

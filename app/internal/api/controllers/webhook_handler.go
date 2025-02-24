@@ -11,11 +11,15 @@ import (
 type Webhook struct {
 	telegramService *services.TelegramService
 	dropboxService  *services.DropBoxService
-	lastMessageText string
+	lastMessages    map[int64]string
 }
 
 func NewWebhook(telegramService *services.TelegramService, dropboxService *services.DropBoxService) *Webhook {
-	return &Webhook{telegramService: telegramService, dropboxService: dropboxService, lastMessageText: ""}
+	return &Webhook{
+		telegramService: telegramService,
+		dropboxService:  dropboxService,
+		lastMessages:    map[int64]string{},
+	}
 }
 
 func (w *Webhook) Handler(c fiber.Ctx) error {
@@ -27,24 +31,20 @@ func (w *Webhook) Handler(c fiber.Ctx) error {
 	}
 
 	if message.Message.Text != "" {
-		w.lastMessageText = message.Message.Text
+		w.lastMessages[message.Message.Date] = message.Message.Text
 		return c.SendStatus(fiber.StatusOK)
 	}
 
 	photo, err := w.telegramService.GetPhoto(&message)
 	if err != nil {
 		fmt.Println(err)
-		return c.SendStatus(fiber.StatusOK)
 	}
 
 	fileName := fmt.Sprintf("без имени %d", message.Message.Date)
 
-	if photo.Caption != "" {
-		fileName = photo.Caption
-	}
-
-	if w.lastMessageText != "" {
-		fileName = w.lastMessageText
+	if txt := w.lastMessages[message.Message.Date]; txt != "" {
+		fileName = txt
+		delete(w.lastMessages, message.Message.Date)
 	}
 
 	err = w.dropboxService.UploadToDropbox(&photo.FileData, fileName)
@@ -54,6 +54,5 @@ func (w *Webhook) Handler(c fiber.Ctx) error {
 		fmt.Println("Photo successfully uploaded")
 	}
 
-	w.lastMessageText = ""
 	return c.SendStatus(fiber.StatusOK)
 }
