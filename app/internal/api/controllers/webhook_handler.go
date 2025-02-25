@@ -27,11 +27,10 @@ func (w *Webhook) Handler(c fiber.Ctx) error {
 
 	if err := c.Bind().JSON(&message); err != nil {
 		fmt.Println(err)
-		return c.SendStatus(fiber.StatusOK)
 	}
 
-	if message.Message.Text != "" {
-		w.lastMessages[message.Message.Date] = message.Message.Text
+	if txt := message.Message.Text; txt != "" {
+		w.lastMessages[message.Message.Date] = txt
 		return c.SendStatus(fiber.StatusOK)
 	}
 
@@ -41,6 +40,10 @@ func (w *Webhook) Handler(c fiber.Ctx) error {
 	}
 
 	fileName := fmt.Sprintf("без имени %d", message.Message.Date)
+
+	if txt := message.Message.Caption; txt != "" {
+		fileName = txt
+	}
 
 	if txt := w.lastMessages[message.Message.Date]; txt != "" {
 		fileName = txt
@@ -52,7 +55,8 @@ func (w *Webhook) Handler(c fiber.Ctx) error {
 		fmt.Println(err)
 	} else {
 		fmt.Println("Photo successfully uploaded")
+		return c.SendStatus(fiber.StatusOK)
 	}
 
-	return c.SendStatus(fiber.StatusOK)
+	return c.SendStatus(fiber.StatusBadGateway)
 }
