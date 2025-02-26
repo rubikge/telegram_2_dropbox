@@ -27,6 +27,7 @@ func (w *Webhook) Handler(c fiber.Ctx) error {
 
 	if err := c.Bind().JSON(&message); err != nil {
 		fmt.Println(err)
+		return c.SendStatus(fiber.StatusBadGateway)
 	}
 
 	if txt := message.Message.Text; txt != "" {
