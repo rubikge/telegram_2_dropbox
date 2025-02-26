@@ -38,6 +38,7 @@ func (w *Webhook) Handler(c fiber.Ctx) error {
 	photo, err := w.telegramService.GetPhoto(&message)
 	if err != nil {
 		fmt.Println(err)
+		return c.SendStatus(fiber.StatusBadGateway)
 	}
 
 	fileName := fmt.Sprintf("без имени %d", message.Message.Date)
@@ -54,10 +55,9 @@ func (w *Webhook) Handler(c fiber.Ctx) error {
 	err = w.dropboxService.UploadToDropbox(&photo.FileData, fileName)
 	if err != nil {
 		fmt.Println(err)
-	} else {
-		fmt.Println("Photo successfully uploaded")
-		return c.SendStatus(fiber.StatusOK)
+		return c.SendStatus(fiber.StatusBadGateway)
 	}
 
-	return c.SendStatus(fiber.StatusBadGateway)
+	fmt.Println("Photo successfully uploaded")
+	return c.SendStatus(fiber.StatusOK)
 }
